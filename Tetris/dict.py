@@ -74,15 +74,15 @@ rotate_ccw_dict = {
 
 clear_type_dict = {
    1 : "SINGLE",
-   2 : "DOUBBLE",
+   2 : "DOUBLE",
    3 : "TRIPPLE",
    4 : "TETRIS"
 }
 
 spin_type_dict = {
-   0 : "None",
-   1 : "Mini",
-   2 : "Full"
+   0 : None,
+   1 : "Mini T-Spin",
+   2 : "T-Spin"
 }
 
 kick_cw_dict = {
@@ -111,4 +111,57 @@ kick_i_ccw_dict = {
    "l" : [(0,0), (-2,0), (1,0), (-2,1), (1,-2)],
    "d" : [(0,0), (1,0), (-2,0), (1,2), (-2,-1)],
    "r" : [(0,0), (2,0), (-1,0), (2,-1), (-1,2)]
+}
+
+'''
+Idk, I coulden't find exactly how b2b and combo work from wiki
+because the attack table given and garbge added from b2b don't match up
+
+         1    Single
+         2    Double
+         3    Triple
+         4    Tetris
+         5    T-Spin Mini Single
+         6    T-Spin Mini Double
+         7    T-Spin Single
+         8    T-Spin Double
+         9    T-Spin Triple
+Clear Type    Lines Sent
+'''
+
+# T-Spin, T-Spin Mini, Lines
+attack_type_dict = {
+   (-1, 0): 0,
+   (0, 1): 1,
+   (0, 2): 2,
+   (0, 3): 3,
+   (0, 4): 4,
+   (1, 1): 5,
+   (1, 2): 6,
+   (2, 1): 7,
+   (2, 2): 8,
+   (2, 3): 9
+}
+
+# Withought B2B
+attack_dict = {
+   1 : [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3],
+   2 : [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6],
+   3 : [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12],
+   4 : [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+   5 : [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3],
+   6 : [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6],
+   7 : [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12],
+   8 : [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+   9 : [6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22, 24, 25, 27, 28, 30, 31, 33, 34, 36]
+}
+
+#This sould go to infinity but idk how it works
+b2b_dict = {
+   range(0, 2) : 0,
+   range(2, 4) : 1,
+   range(4, 9) : 2,
+   range(9, 25) : 3,
+   range(25, 68) : 4,
+   range(68, 186) : 5
 }
