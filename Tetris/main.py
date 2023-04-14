@@ -1,6 +1,5 @@
 import random, time
 from dicts import *
-from datetime import datetime, timedelta
 
 #============================================================================#
 
@@ -137,7 +136,7 @@ def check_for_spin():
     
 
 def check_for_lines():
-    global clear_type, lines_cleared_last_piece, spin, combo, lines_cleared, all_clear
+    global clear_type, lines_cleared_last_piece, spin, combo, lines_cleared, all_clear, back_to_back, attack_sent, attack_per_line, attack_per_piece
 
     # Find all full rows
     lines = []
@@ -145,21 +144,31 @@ def check_for_lines():
         if all([i != 0 for i in board[row]]): lines.append(row)
     
     clear_type = len(lines)
-    if current_shape.spin: spin = True
-    
 
     if clear_type != 0:
         combo += 1
         lines_cleared += clear_type
         lines_cleared_last_piece = True
+
+        if current_shape.spin_type == 0 and clear_type != 4: back_to_back = -1
+        else: back_to_back += 1
     else:
         combo = -1
-    
+        return None
 
     [board.pop(i) for i in lines[::-1]]
     [board.insert(0, [0 for i in range(BOARD_WIDTH)]) for j in range(len(lines))]
 
+    attack = (current_shape.spin_type, clear_type)
+    attack = attack_type_dict[attack]
+
+    attack_sent += attack_dict[attack][combo]
+
     all_clear = check_for_all_clear()
+    if all_clear: attack_sent += 10
+
+    attack_per_line = attack_sent / lines_cleared
+    attack_per_piece = attack_sent / pices_placed
 
 #============================================================================#
 
@@ -326,7 +335,8 @@ def setup():
     BOARD_WIDTH, BOARD_HEIGHT, board,\
     clear_type, lines_cleared_last_piece,\
     held_piece, next_queue, current_shape, current_shape_id,\
-    lines_cleared, pices_placed, all_clear
+    lines_cleared, pices_placed, all_clear, back_to_back, attack_sent, attack_per_line,\
+    attack_per_piece
     
 
     BOARD_WIDTH, BOARD_HEIGHT = 10, 23
@@ -351,7 +361,11 @@ def setup():
     lines_cleared = 0
 
     all_clear = False
-    
+    attack_sent = 0
+    back_to_back = -1
+
+    attack_per_piece = 0
+    attack_per_line = 0
 
 #============================================================================#
 
