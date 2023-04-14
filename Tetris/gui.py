@@ -21,7 +21,7 @@ held_current_piece = False
 
 Tiles = pygame.sprite.Group()
 Next_queue = pygame.sprite.Group()
-Held_display = pygame.sprite.Group()
+Held_display = pygame.sprite.Group() 
 
 #============================================================================#
 
@@ -30,46 +30,224 @@ class Debug():
         # Theese sould lag behind one piece
         self.pieces_placed = main.pices_placed
         self.lines_cleared = main.lines_cleared
-        
-        self.clear_text = "None"
-        self.font = pygame.font.Font(None, 100)
+        self.text_clear_type = "None"
+        self.display_clear = False
+        self.frame = -1
+        self.display_spin = False
 
-    def get_all_clear_text(self):
-        all_clear_text = "ALL CLEAR!" if main.all_clear else "------"
-        self.all_clear_text_surf = self.font.render(all_clear_text, True, (200, 200, 200))
-    
+    def get_text(self):
+        if main.all_clear: self.all_clear = True
+
+        self.text_combo = f"{main.combo} Combo"
+        self.display_combo = True if main.combo >= 1 else False
+
+        self.text_back_to_back = f"B2B x{main.back_to_back}"
+        self.display_back_to_back = True if main.back_to_back >= 1 else False
+
+        self.text_attack_sent = f"{main.attack_sent}"
+        self.text_lines_cleared = f"{main.lines_cleared}"
+
+        spin_text = spin_type_dict[main.current_shape.spin_type]
+        self.display_spin = False if spin_text == None else True
+        self.text_spin = f"{spin_text}"
+
+        atack_per_line = round(main.attack_per_line, 2)
+        self.text_atack_per_line = f"{atack_per_line}"
+
+        atack_per_piece = round(main.attack_per_piece, 2)
+        self.text_atack_per_piece = f"{atack_per_piece}"
+
+    def render_text(self):
+        # Atack / Line
+        # ========================================================================= #
+        font = pygame.font.Font("UbuntuMono-Bold.ttf", 35)
+
+        title_surf = font.render("Efficiency", True, (120, 104, 0))
+        title_rect = title_surf.get_rect(midtop = (90, 0))
+
+        value_surf = font.render(self.text_atack_per_line, True, (120, 104, 0))
+        value_rect = value_surf.get_rect(midtop = (90, 50))
+
+        unit_surf = font.render("Atk / Line", True, (120, 104, 0))
+        unit_rect = title_surf.get_rect(midtop = (90, 105))
+
+        box = pygame.Surface((180, 60))
+        box = box.get_rect(topleft = (0, 40))
+
+        self.surf_atack_per_line = pygame.Surface((180, 135), pygame.SRCALPHA)
+        self.rect_atack_per_line = self.surf_atack_per_line.get_rect(midtop = (595, 120))
+        
+        self.surf_atack_per_line.blit(title_surf, title_rect)
+        self.surf_atack_per_line.blit(value_surf, value_rect)
+        self.surf_atack_per_line.blit(unit_surf, unit_rect)
+
+        pygame.draw.rect(self.surf_atack_per_line, (200, 200, 200), box, 5)
+
+        # Atack / Piece
+        # ========================================================================= #
+        title_surf = font.render("Efficiency", True, (120, 104, 0))
+        title_rect = title_surf.get_rect(midtop = (90, 0))
+
+        value_surf = font.render(self.text_atack_per_piece, True, (120, 104, 0))
+        value_rect = value_surf.get_rect(midtop = (90, 50))
+
+        font = pygame.font.Font("UbuntuMono-Bold.ttf", 32)
+
+        unit_surf = font.render("Atk / Piece", True, (120, 104, 0))
+        unit_rect = title_surf.get_rect(midtop = (90, 105))
+
+        font = pygame.font.Font("UbuntuMono-Bold.ttf", 35)
+
+        box = pygame.Surface((180, 60))
+        box = box.get_rect(topleft = (0, 40))
+
+        self.surf_atack_per_piece = pygame.Surface((180, 135), pygame.SRCALPHA)
+        self.rect_atack_per_piece = self.surf_atack_per_piece.get_rect(midtop = (595, 285))
+        
+        self.surf_atack_per_piece.blit(title_surf, title_rect)
+        self.surf_atack_per_piece.blit(value_surf, value_rect)
+        self.surf_atack_per_piece.blit(unit_surf, unit_rect)
+
+        pygame.draw.rect(self.surf_atack_per_piece, (200, 200, 200), box, 5)
+        
+        # B2B
+        # ========================================================================= #
+        font = pygame.font.Font("UbuntuMono-Bold.ttf", 30)
+
+        title_surf = font.render("Back To Back", True, (120, 104, 0))
+        title_rect = title_surf.get_rect(midtop = (90, 0))
+
+        font = pygame.font.Font("UbuntuMono-Bold.ttf", 35)
+
+        value_surf = font.render(self.text_back_to_back, True, (120, 104, 0))
+        value_rect = value_surf.get_rect(midtop = (90, 45))
+
+        box = pygame.Surface((180, 60))
+        box = box.get_rect(topleft = (0, 35))
+
+        self.surf_back_to_back = pygame.Surface((180, 100), pygame.SRCALPHA)
+        self.rect_back_to_back = self.surf_atack_per_piece.get_rect(midtop = (595, 445))
+
+        self.surf_back_to_back.blit(title_surf, title_rect)
+        self.surf_back_to_back.blit(value_surf, value_rect)
+
+        pygame.draw.rect(self.surf_back_to_back, (200, 200, 200), box, 5)
+
+        # Lines Cleared (This Piece)
+        # ========================================================================= #
+        font = pygame.font.Font("UbuntuMono-Bold.ttf", 35 + (self.frame // 2))
+
+        pos = (595, 575) if self.display_back_to_back else (595, 450)
+
+        self.surf_clear_type = font.render(self.text_clear_type, True, (120, 104, 0))
+        self.rect_clear_type = self.surf_clear_type.get_rect(center = pos)
+
+        self.surf_clear_type.set_alpha(240 - (self.frame * 4))
+
+        if self.display_clear: self.frame += 1
+        if self.frame >= 60: self.display_clear = False
+
+        # Spin Text
+        # ========================================================================= #
+        font = pygame.font.Font("UbuntuMono-Bold.ttf", 30)
+
+        shape_id = shape_id_dict[main.current_shape.shape]
+
+        pos = (595, 575) if self.display_back_to_back else (595, 450)
+        #pos = (595, 540) if self.display_back_to_back else (595, 440)
+
+        self.surf_spin = font.render(self.text_spin, True, (col_dict[shape_id]))
+        self.rect_spin = self.surf_spin.get_rect(center = pos)
+
+        # The next 2 could be done useing seprate classes 
+        # But its only 2 objects so its not worth it and could be confused with the above ones
+
+        # Atack
+        # ========================================================================= #
+        font = pygame.font.Font("UbuntuMono-Bold.ttf", 35)
+
+        title_surf = font.render("Atack Sent", True, (150, 60, 60))
+        title_rect = title_surf.get_rect(midtop = (90, 0))
+
+        box_surf = font.render("[        ]", True, (150, 60, 60))
+        box_rect = box_surf.get_rect(midtop = (90, 40))
+
+        value_surf = font.render(self.text_attack_sent, True, (150, 60, 60))
+        value_rect = value_surf.get_rect(midtop = (90, 40))
+
+        self.surf_atack = pygame.Surface((180, 80), pygame.SRCALPHA)
+        self.rect_atack = self.surf_atack_per_line.get_rect(midtop = (1325, 660))
+
+        self.surf_atack.blit(box_surf, box_rect)
+        self.surf_atack.blit(title_surf, title_rect)
+        self.surf_atack.blit(value_surf, value_rect)
+
+        # Total Lines Cleard
+        # ========================================================================= #
+        
+        title_surf = font.render("Lines", True, (150, 60, 60))
+        title_rect = title_surf.get_rect(midtop = (90, 0))
+
+        box_surf = font.render("[        ]", True, (150, 60, 60))
+        box_rect = box_surf.get_rect(midtop = (90, 40))
+
+        value_surf = font.render(self.text_lines_cleared, True, (150, 60, 60))
+        value_rect = value_surf.get_rect(midtop = (90, 40))
+
+        self.surf_lines_cleard = pygame.Surface((180, 80), pygame.SRCALPHA)
+        self.rect_lines_cleard = self.surf_lines_cleard.get_rect(midtop = (1325, 760))
+
+        self.surf_lines_cleard.blit(box_surf, box_rect)
+        self.surf_lines_cleard.blit(title_surf, title_rect)
+        self.surf_lines_cleard.blit(value_surf, value_rect)
+
+        # Combo
+        # ========================================================================= #
+
+        box_surf = font.render("[        ]", True, (150, 60, 60))
+        box_rect = box_surf.get_rect(midtop = (90, 0))
+
+        value_surf = font.render(self.text_combo, True, (150, 60, 60))
+        value_rect = value_surf.get_rect(midtop = (90, 0))
+
+        self.surf_combo = pygame.Surface((180, 40), pygame.SRCALPHA)
+        self.rect_combo = self.surf_combo.get_rect(midtop = (1325, 875))
+
+        self.surf_combo.blit(box_surf, box_rect)
+        self.surf_combo.blit(value_surf, value_rect)
+        # ========================================================================= #
+
+
+
     def get_new_clear(self):
+        # Calculateed useing the diffrance in total lines cleard
         if self.pieces_placed != main.pices_placed:
 
             if self.lines_cleared != main.lines_cleared:
-                self.clear_text = clear_type_dict[main.lines_cleared - self.lines_cleared]
+                self.display_clear = True
+                self.frame = 0
+                self.text_clear_type = clear_type_dict[main.lines_cleared - self.lines_cleared]
                 self.lines_cleared = main.lines_cleared
 
-            else: self.clear_text = "None"
+            #else: self.display_clear = False
             self.pieces_placed = main.pices_placed
-
-        self.clear_text_surf = self.font.render(self.clear_text, True, (200, 200, 200))
-    
-    def get_combo(self):
-        combo_text = f"Combo : {main.combo}"
-        self.combo_text_surf = self.font.render(combo_text, True, (200, 200, 200))
-
-    def get_spin_text(self):
-        spin_text = spin_type_dict[main.current_shape.spin_type]
-        spin_text = f"{spin_text} - Spin!"
-
-        self.spin_text_surf = self.font.render(spin_text, True, (200, 200, 200))
     
     def update(self):
-        self.get_combo()
+        self.get_text()
+        self.render_text()
         self.get_new_clear()
-        self.get_spin_text()
-        self.get_all_clear_text()
 
-        screen.blit(self.clear_text_surf, (0,0))
-        screen.blit(self.combo_text_surf, (0,50))
-        screen.blit(self.spin_text_surf, (0,100))
-        screen.blit(self.all_clear_text_surf, (0, 150))
+        screen.blit(self.surf_atack_per_line, self.rect_atack_per_line)
+        screen.blit(self.surf_atack_per_piece, self.rect_atack_per_piece)
+        screen.blit(self.surf_atack, self.rect_atack)
+        screen.blit(self.surf_lines_cleard, self.rect_lines_cleard)
+
+
+        if self.display_combo: screen.blit(self.surf_combo, self.rect_combo)
+        if self.display_spin: screen.blit(self.surf_spin, self.rect_spin)
+        if self.display_back_to_back: screen.blit(self.surf_back_to_back, self.rect_back_to_back)
+        if self.display_clear: screen.blit(self.surf_clear_type, self.rect_clear_type)
+
 
 debug = Debug()
 #============================================================================#
